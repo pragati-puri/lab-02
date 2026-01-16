@@ -20,9 +20,9 @@ import java.util.Arrays;
 public class MainActivity extends AppCompatActivity {
     ListView cityList;
     ArrayAdapter<String> cityAdapter;
-    ArrayList<String> dataList;
+    ArrayList<String> citiesList;
     Button addCityBtn, deleteCityBtn;
-    int selectedPosition = -1;
+    int selected = -1;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -41,33 +41,39 @@ public class MainActivity extends AppCompatActivity {
 
         String []cities = {"Edmonton", "Vancouver", "Moscow"};
 
-        dataList = new ArrayList<>();
-        dataList.addAll(Arrays.asList(cities));
+        citiesList = new ArrayList<>();
+        citiesList.addAll(Arrays.asList(cities));
 
-        cityAdapter = new ArrayAdapter<>(this, R.layout.content, dataList);
+        cityAdapter = new ArrayAdapter<>(this, R.layout.content, citiesList);
         cityList.setAdapter(cityAdapter);
+        cityList.setChoiceMode(ListView.CHOICE_MODE_SINGLE);
 
         cityList.setOnItemClickListener((parent, view, position, id) -> {
-            selectedPosition = position;
-            Toast.makeText(MainActivity.this, "Selected: " + dataList.get(position), Toast.LENGTH_SHORT).show();
+
+            if (selected == position) {
+                selected = -1;
+                cityList.setItemChecked(position, false);
+                cityList.clearChoices();
+            } else {
+                selected = position;
+                cityList.setItemChecked(position, true);
+            }
         });
 
     //ADD CITY
-        // ADD CITY
         addCityBtn.setOnClickListener(v -> {
-            AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
+            AlertDialog.Builder builder = new AlertDialog.Builder(this);
             builder.setTitle("Add City");
 
-            final EditText input = new EditText(MainActivity.this);
+            EditText input = new EditText(this);
             input.setHint("Enter city name");
             builder.setView(input);
 
             builder.setPositiveButton("CONFIRM", (dialog, which) -> {
-                String cityName = input.getText().toString().trim();
-                if (!cityName.isEmpty()) {
-                    dataList.add(cityName);
+                String city = input.getText().toString();
+                if (!city.isEmpty()) {
+                    citiesList.add(city);
                     cityAdapter.notifyDataSetChanged();
-                    Toast.makeText(MainActivity.this, "City added!", Toast.LENGTH_SHORT).show();
                 }
             });
 
@@ -78,10 +84,11 @@ public class MainActivity extends AppCompatActivity {
 
     // DELETE CITY
         deleteCityBtn.setOnClickListener(v -> {
-            if (selectedPosition != -1) {
-                dataList.remove(selectedPosition);
+            if (selected != -1) {
+                citiesList.remove(selected);
                 cityAdapter.notifyDataSetChanged();
-                selectedPosition = -1;
+                selected = -1;
+                cityList.clearChoices();
             } else {
                 Toast.makeText(this, "Select a city first", Toast.LENGTH_SHORT).show();
             }
